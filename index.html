@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aviatrix Mini</title>
+    <style>
+        body { text-align: center; font-family: Arial; background: #1a1a2e; color: white; padding-top: 50px; }
+        #multiplier { font-size: 80px; color: #4ecca3; margin: 20px; }
+        button { padding: 15px 40px; font-size: 20px; cursor: pointer; background: #e94560; color: white; border: none; border-radius: 10px; }
+        button:disabled { background: #555; }
+        #status { margin-top: 20px; font-size: 24px; }
+    </style>
+</head>
+<body><div style="font-size: 20px; color: #ffd700;">Balance: $<span id="balance">100.00</span></div>
+<input type="number" id="betAmount" value="10" style="width: 60px; padding: 5px;">
+
+    <h1>Aviatrix Mini Game</h1>
+    <div id="multiplier">1.00x</div>
+    <button id="cashoutBtn">CASH OUT</button>
+    <div id="status"></div>
+
+    <script src="script.js"></script>
+</body><canvas id="gameCanvas" width="600" height="300" style="border-bottom: 2px solid #555; background: #0f3460;"></canvas>
+<div id="multiplier">1.00x</div>
+</html>
