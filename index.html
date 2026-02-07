@@ -82,7 +82,7 @@
                     mDisp.innerText = m.toFixed(2) + "x";
                     let moveX = (m - 1) * 40;
                     let moveY = (m - 1) * -25;
-                    plane.style.transform = translate(${moveX}px, ${moveY}px);
+                    plane.style.transform = `translate(${moveX}px, ${moveY}px)`;
 
                     if (Math.random() < 0.012) crash();
                 }, 60);
