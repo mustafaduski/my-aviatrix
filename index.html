@@ -3,160 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aviator Pro - Telegram</title>
+    <title>Aviatrix Master</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            margin: 0;
-            background: radial-gradient(circle, #0f3460, #16213e); /* ڕەنگی شینی نوێ */
-            color: white;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .status-bar {
-            width: 100%;
-            padding: 10px;
-            background: rgba(0,0,0,0.6);
-            display: flex;
-            justify-content: space-around;
-            border-bottom: 2px solid #00d2ff;
-        }
-
-        .game-area {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        #multiplier {
-            font-size: 70px;
-            font-weight: bold;
-            color: #00ffcc;
-            text-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
-        }
-
-        .controls {
-            width: 100%;
-            background: #1a1a2e;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-radius: 20px 20px 0 0;
-        }
-
-        .bet-btn {
-            width: 80%;
-            padding: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(to right, #00d2ff, #3a7bd5);
-            color: white;
-            cursor: pointer;
-        }
-
-        .cashout-btn {
-            background: linear-gradient(to right, #f2994a, #f2c94c);
-        }
-
-        input {
-            margin-bottom: 10px;
-            padding: 10px;
-            width: 100px;
-            border-radius: 5px;
-            border: none;
-            text-align: center;
-        }
+        body { margin: 0; background: #050a14; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .top-bar { padding: 15px; background: #111; display: flex; justify-content: space-between; border-bottom: 2px solid #00ff88; }
+        .game-zone { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        #multi { font-size: 80px; font-weight: 900; color: #00ff88; }
+        .controls { padding: 30px; background: #111; border-radius: 25px 25px 0 0; display: flex; flex-direction: column; align-items: center; }
+        .btn { width: 100%; padding: 20px; font-size: 24px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .btn-bet { background: #00ff88; color: black; }
+        .btn-cash { background: #ffaa00; color: black; }
+        input { width: 80px; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: none; font-size: 18px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="status-bar">
-        <div>👤: <span id="user-name">Loading...</span></div>
-        <div>💰: $<span id="balance">100.00</span></div>
-    </div>
+<div class="top-bar">
+    <div id="u-name">...</div>
+    <div>$ <span id="u-balance">100.00</span></div>
+</div>
 
-    <div class="game-area">
-        <div id="multiplier">1.00x</div>
-    </div>
+<div class="game-zone">
+    <div id="multi">1.00x</div>
+</div>
 
-    <div class="controls">
-        <input type="number" id="bet-input" value="10">
-        <button id="action-btn" class="bet-btn">BET</button>
-    </div>
+<div class="controls">
+    <input type="number" id="bet-val" value="10">
+    <button id="main-btn" class="btn btn-bet">BET</button>
+</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-        document.getElementById('user-name').innerText = tg.initDataUnsafe?.user?.first_name || "Yarizan";
+    // سەیڤکردنی پارە لەناو مۆبایلی یاریزانەکە
+    let balance = parseFloat(localStorage.getItem('bal')) || 100.00;
+    let m = 1.00;
+    let active = false;
+    let timer;
 
-        let balance = 100.00;
-        let multi = 1.00;
-        let isRunning = false;
-        let interval;
+    const bDisp = document.getElementById('u-balance');
+    const mDisp = document.getElementById('multi');
+    const btn = document.getElementById('main-btn');
+    const bVal = document.getElementById('bet-val');
 
-        const multiDisplay = document.getElementById('multiplier');
-        const balanceDisplay = document.getElementById('balance');
-        const actionBtn = document.getElementById('action-btn');
-        const betInput = document.getElementById('bet-input');
+    document.getElementById('u-name').innerText = tg.initDataUnsafe?.user?.first_name || "Yarizan";
+    updateUI();
 
-        actionBtn.onclick = () => {
-            if (!isRunning) {
-                let bet = parseFloat(betInput.value);
-                if (bet <= balance && bet > 0) {
-                    balance -= bet;
-                    updateUI();
-                    start();
-                }
-            } else {
-                cashout();
+    btn.onclick = () => {
+        if (!active) {
+            let b = parseFloat(bVal.value);
+            if (b <= balance && b > 0) {
+                balance -= b;
+                active = true;
+                m = 1.00;
+                btn.innerText = "CASH OUT";
+                btn.className = "btn btn-cash";
+                mDisp.style.color = "#00ff88";
+                updateUI();
+                timer = setInterval(() => {
+                    m += 0.02;
+                    mDisp.innerText = m.toFixed(2) + "x";
+                    if (Math.random() < 0.01) crash();
+                }, 60);
             }
-        };
-
-        function start() {
-            isRunning = true;
-            multi = 1.00;
-            actionBtn.innerText = "CASH OUT";
-            actionBtn.classList.add('cashout-btn');
-            
-            interval = setInterval(() => {
-                multi += 0.01;
-                multiDisplay.innerText = multi.toFixed(2) + "x";
-                if (Math.random() < 0.005) crash();
-            }, 50);
-        }
-
-        function cashout() {
-            balance += parseFloat(betInput.value) * multi;
+        } else {
+            balance += parseFloat(bVal.value) * m;
             stop();
         }
+    };
 
-        function crash() {
-            multiDisplay.innerText = "CRASHED!";multiDisplay.style.color = "red";
-            stop();
-        }
+    function crash() {
+        mDisp.innerText = "CRASHED!";
+        mDisp.style.color = "#ff4444";
+        stop();
+    }
 
-        function stop() {
-            isRunning = false;
-            clearInterval(interval);
-            actionBtn.innerText = "BET";
-            actionBtn.classList.remove('cashout-btn');
-            updateUI();
-            setTimeout(() => { multiDisplay.style.color = "#00ffcc"; }, 2000);
-        }
+    function stop() {
+        active = false;
+        clearInterval(timer);
+        btn.innerText = "BET";
+        btn.className = "btn btn-bet";
+        localStorage.setItem('bal', balance); // پاشەکەوتکردنی پارەکە
+        updateUI();
+    }
 
-        function updateUI() {
-            balanceDisplay.innerText = balance.toFixed(2);
-        }
-    </script>
+    function updateUI() {
+        bDisp.innerText = balance.toFixed(2);
+    }
+</script>
 </body>
 </html>
