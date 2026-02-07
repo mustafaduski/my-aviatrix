@@ -3,18 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aviatrix Master</title>
+    <title>Aviatrix Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { margin: 0; background: #050a14; color: white; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .top-bar { padding: 15px; background: #111; display: flex; justify-content: space-between; border-bottom: 2px solid #00ff88; }
-        .game-zone { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
-        #multi { font-size: 80px; font-weight: 900; color: #00ff88; }
+        .game-zone { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        #multi { font-size: 60px; font-weight: 900; color: #00ff88; z-index: 2; }
+        
+        /* ستایلی فڕۆکەکە */
+        #plane {
+            position: absolute;
+            font-size: 50px;
+            bottom: 20%;
+            left: 10%;
+            transition: transform 0.1s linear;
+            display: none; /* تەنها کاتی یاری دیار دەبێت */
+        }
+
         .controls { padding: 30px; background: #111; border-radius: 25px 25px 0 0; display: flex; flex-direction: column; align-items: center; }
-        .btn { width: 100%; padding: 20px; font-size: 24px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .btn { width: 100%; padding: 20px; font-size: 24px; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; }
         .btn-bet { background: #00ff88; color: black; }
         .btn-cash { background: #ffaa00; color: black; }
-        input { width: 80px; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: none; font-size: 18px; text-align: center; }
+        input { width: 80px; padding: 10px; margin-bottom: 10px; border-radius: 8px; text-align: center; }
     </style>
 </head>
 <body>
@@ -25,6 +36,7 @@
 </div>
 
 <div class="game-zone">
+    <div id="plane">✈️</div>
     <div id="multi">1.00x</div>
 </div>
 
@@ -37,7 +49,6 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // سەیڤکردنی پارە لەناو مۆبایلی یاریزانەکە
     let balance = parseFloat(localStorage.getItem('bal')) || 100.00;
     let m = 1.00;
     let active = false;
@@ -45,6 +56,7 @@
 
     const bDisp = document.getElementById('u-balance');
     const mDisp = document.getElementById('multi');
+    const plane = document.getElementById('plane');
     const btn = document.getElementById('main-btn');
     const bVal = document.getElementById('bet-val');
 
@@ -61,10 +73,19 @@
                 btn.innerText = "CASH OUT";
                 btn.className = "btn btn-cash";
                 mDisp.style.color = "#00ff88";
+                plane.style.display = "block"; // فڕۆکەکە دەرکەوێت
+                plane.style.transform = "translate(0, 0)";
                 updateUI();
+                
                 timer = setInterval(() => {
                     m += 0.02;
                     mDisp.innerText = m.toFixed(2) + "x";
+                    
+                    // جوڵاندنی فڕۆکەکە بەرەو سەرەوە و ڕاست
+                    let moveX = (m - 1) * 50;
+                    let moveY = (m - 1) * -30;
+                    plane.style.transform = translate(${moveX}px, ${moveY}px);
+
                     if (Math.random() < 0.01) crash();
                 }, 60);
             }
@@ -77,6 +98,7 @@
     function crash() {
         mDisp.innerText = "CRASHED!";
         mDisp.style.color = "#ff4444";
+        plane.style.display = "none"; // کاتی تەقینەوە فڕۆکەکە ون بێت
         stop();
     }
 
@@ -85,12 +107,11 @@
         clearInterval(timer);
         btn.innerText = "BET";
         btn.className = "btn btn-bet";
-        localStorage.setItem('bal', balance); // پاشەکەوتکردنی پارەکە
+        localStorage.setItem('bal', balance);
         updateUI();
     }
 
-    function updateUI() {
-        bDisp.innerText = balance.toFixed(2);
+    function updateUI() {bDisp.innerText = balance.toFixed(2);
     }
 </script>
 </body>
