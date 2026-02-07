@@ -80,8 +80,8 @@
                 timer = setInterval(() => {
                     m += 0.02;
                     mDisp.innerText = m.toFixed(2) + "x";
-                    let moveX = (m - 1) * 40;
-                    let moveY = (m - 1) * -25;
+                    let moveX = (m - 1) 80;
+                    let moveY = (m - 1) * 3;
                     plane.style.transform = `translate(${moveX}px, ${moveY}px)`;
 
                     if (Math.random() < 0.032) crash();
